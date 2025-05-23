@@ -29,15 +29,24 @@ export const WeatherDashboard = () => {
     }
   };
 
+  const handleHomeClick = () => {
+    setShowFavorites(false);
+    setSelectedCity(MAJOR_CITIES[0]);
+    setIsDropdownOpen(false);
+  };
+
   const displayCities = showFavorites ? favorites : MAJOR_CITIES;
 
   return (
     <div className="grid grid-cols-[80px_1fr] gap-6">
       {/* Sidebar */}
       <div className="bg-[#242426] rounded-2xl p-4 flex flex-col items-center gap-6">
-        <div className="text-yellow-400">
+        <button
+          onClick={handleHomeClick}
+          className={`text-yellow-400 hover:text-yellow-300 transition-colors`}
+        >
           <SunIcon className="w-6 h-6" />
-        </div>
+        </button>
         <nav className="flex flex-col gap-6 items-center flex-1">
           <button
             className={`transition-colors ${
@@ -45,7 +54,12 @@ export const WeatherDashboard = () => {
                 ? "text-yellow-400"
                 : "text-gray-400 hover:text-gray-300"
             }`}
-            onClick={() => setShowFavorites(!showFavorites)}
+            onClick={() => {
+              setShowFavorites(!showFavorites);
+              if (!showFavorites && favorites.length > 0) {
+                setSelectedCity(favorites[0]);
+              }
+            }}
           >
             <StarSolid className="w-6 h-6" />
           </button>
@@ -133,33 +147,46 @@ export const WeatherDashboard = () => {
           </div>
         </div>
 
-        {/* Main Weather Display */}
-        <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
-          {/* Left Section - Current Weather */}
-          <div className="bg-[#242426] rounded-xl p-6">
-            <div className="flex flex-col items-center text-center">
-              <h2 className="text-2xl font-bold">{selectedCity.name}</h2>
-              <div className="text-7xl my-4">⛅</div>
-              <p className="text-5xl font-bold">24°</p>
-              <p className="text-gray-400 mt-2">맑음</p>
-            </div>
-          </div>
-
-          {/* Right Section - Weather Details */}
-          <div className="bg-[#242426] rounded-xl p-6">
-            {showFavorites && isFavorite(selectedCity.name) ? (
-              <DetailedWeatherCard
-                location={selectedCity.name}
-                coordinates={selectedCity.coordinates}
-              />
+        {showFavorites ? (
+          // Favorites View - Show all favorite cities with detailed weather
+          <div className="grid grid-cols-1 gap-6">
+            {favorites.length === 0 ? (
+              <div className="bg-[#242426] rounded-xl p-6 text-center">
+                <p className="text-gray-400">즐겨찾기한 도시가 없습니다.</p>
+                <p className="text-sm text-gray-500 mt-2">
+                  도시 옆의 별표 아이콘을 클릭하여 즐겨찾기에 추가하세요.
+                </p>
+              </div>
             ) : (
+              favorites.map((city) => (
+                <div key={city.name} className="bg-[#242426] rounded-xl p-6">
+                  <DetailedWeatherCard
+                    location={city.name}
+                    coordinates={city.coordinates}
+                  />
+                </div>
+              ))
+            )}
+          </div>
+        ) : (
+          // Normal View - Show selected city with basic weather
+          <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
+            <div className="bg-[#242426] rounded-xl p-6">
+              <div className="flex flex-col items-center text-center">
+                <h2 className="text-2xl font-bold">{selectedCity.name}</h2>
+                <div className="text-7xl my-4">⛅</div>
+                <p className="text-5xl font-bold">24°</p>
+                <p className="text-gray-400 mt-2">맑음</p>
+              </div>
+            </div>
+            <div className="bg-[#242426] rounded-xl p-6">
               <WeatherCard
                 location={selectedCity.name}
                 coordinates={selectedCity.coordinates}
               />
-            )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Weather Chart */}
         <div className="bg-[#242426] rounded-xl p-6">
