@@ -94,7 +94,7 @@ export const WeatherCard = ({ location, coordinates }: WeatherCardProps) => {
     <div className="grid grid-cols-2 gap-6">
       {/* Left Section - Detailed Weather */}
       <div className="space-y-6">
-        <h3 className="text-lg font-semibold">상세 날씨</h3>
+        <h3 className="text-lg font-semibold">{location} 상세 날씨</h3>
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-[#1C1C1E] rounded-xl p-4">
             <p className="text-gray-400 text-sm">습도</p>
