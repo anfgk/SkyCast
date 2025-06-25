@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 
 // 날씨 데이터를 좌표로 가져오는 API 함수
-import { getWeatherByCoordinates } from "@/shared/api/weatherApi";
+import { getWeatherByCoordinates, capitalizeFirstLetter } from "@/shared/api/weatherApi";
 
 // Leaflet 라이브러리의 좌표 타입 (위도, 경도)
 import type { LatLngExpression } from "leaflet";
@@ -53,7 +53,7 @@ export const WeatherCard = ({ location, coordinates }: WeatherCardProps) => {
           humidity: response.main.humidity,
           windSpeed: response.wind.speed,
           pressure: response.main.pressure,
-          description: response.weather[0].description,
+          description: capitalizeFirstLetter(response.weather[0].description),
           icon: response.weather[0].icon,
         });
       } catch (err) {

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import {
   getWeatherByCoordinates, // 위도/경도로 날씨 정보 가져오는 API
   getAirQuality, // 대기질 정보 가져오는 API
-  getUVIndex, // 자외선 지수 가져오는 API
   getAQIDescription, // AQI 수치를 설명 텍스트로 변환하는 함수
   getUVIDescription, // UVI 수치를 설명 텍스트로 변환하는 함수
 } from "@/shared/api/weatherApi";
@@ -27,7 +26,6 @@ interface DetailedWeatherData {
   sunrise: number;
   sunset: number;
   aqi: number;
-  uvi: number;
   pm25: number;
   pm10: number;
 }
@@ -51,11 +49,10 @@ export const DetailedWeatherCard = ({
         setError(null);
         const [lat, lon] = coordinates as [number, number]; // 위도, 경도 추출
 
-        // 날씨, 대기질, 자외선 지수 정보 병렬 요청
-        const [weather, airQuality, uvIndex] = await Promise.all([
+        // 날씨, 대기질 정보 병렬 요청
+        const [weather, airQuality] = await Promise.all([
           getWeatherByCoordinates(lat, lon),
           getAirQuality(lat, lon),
-          getUVIndex(lat, lon),
         ]);
 
         // 날씨 정보 state에 저장
@@ -70,7 +67,6 @@ export const DetailedWeatherCard = ({
           sunrise: weather.sys.sunrise,
           sunset: weather.sys.sunset,
           aqi: airQuality.main.aqi,
-          uvi: uvIndex.value,
           pm25: airQuality.components.pm2_5,
           pm10: airQuality.components.pm10,
         });
@@ -147,10 +143,10 @@ export const DetailedWeatherCard = ({
         </div>
       </div>
 
-      {/* Air Quality and UV Index */}
+      {/* Air Quality */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">대기질 & 자외선</h3>
-        <div className="grid grid-cols-2 gap-4">
+        <h3 className="text-lg font-semibold">대기질</h3>
+        <div className="grid grid-cols-1 gap-4">
           <div className="bg-[#1C1C1E] rounded-xl p-4">
             <p className="text-gray-400 text-sm">대기질 지수 (AQI)</p>
             <p className="text-xl font-semibold mt-1">
@@ -160,13 +156,6 @@ export const DetailedWeatherCard = ({
               <p className="text-sm">PM2.5: {weatherData.pm25} µg/m³</p>
               <p className="text-sm">PM10: {weatherData.pm10} µg/m³</p>
             </div>
-          </div>
-          <div className="bg-[#1C1C1E] rounded-xl p-4">
-            <p className="text-gray-400 text-sm">자외선 지수 (UVI)</p>
-            <p className="text-xl font-semibold mt-1">
-              {getUVIDescription(weatherData.uvi)}
-            </p>
-            <p className="text-sm mt-2">수치: {weatherData.uvi}</p>
           </div>
         </div>
       </div>

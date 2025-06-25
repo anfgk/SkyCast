@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { WeatherCard } from "@/entities/Weather";
 import { DetailedWeatherCard } from "@/entities/Weather/ui/DetailedWeatherCard";
 import { MAJOR_CITIES } from "@/shared/config/cities";
 import type { City } from "@/shared/config/cities";
+import { getWeatherByCoordinates, getDailyForecast, capitalizeFirstLetter } from "@/shared/api/weatherApi";
 import {
   MagnifyingGlassIcon,
   SunIcon,
@@ -13,13 +14,113 @@ import {
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
 import { useFavoriteStore } from "@/shared/store/favoriteStore";
 
+interface WeatherData {
+  temp: number;
+  description: string;
+  icon: string;
+}
+
+interface DailyWeatherData {
+  dt: number;
+  temp: number;
+  temp_min: number;
+  temp_max: number;
+  humidity: number;
+  weather: Array<{
+    main: string;
+    description: string;
+    icon: string;
+  }>;
+  dt_txt: string;
+}
+
 export const WeatherDashboard = () => {
   const [selectedCity, setSelectedCity] = useState<City>(MAJOR_CITIES[0]);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showFavorites, setShowFavorites] = useState(false);
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [dailyData, setDailyData] = useState<DailyWeatherData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dailyLoading, setDailyLoading] = useState(true);
   const { favorites, addFavorite, removeFavorite, isFavorite } =
     useFavoriteStore();
+
+  // 선택된 도시의 날씨 데이터 가져오기
+  useEffect(() => {
+    const fetchWeatherData = async () => {
+      try {
+        setLoading(true);
+        const [lat, lon] = selectedCity.coordinates as [number, number];
+        const response = await getWeatherByCoordinates(lat, lon);
+        
+        setWeatherData({
+          temp: Math.round(response.main.temp),
+          description: capitalizeFirstLetter(response.weather[0].description),
+          icon: response.weather[0].icon,
+        });
+      } catch (error) {
+        console.error("날씨 정보를 가져오는데 실패했습니다:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchDailyData = async () => {
+      try {
+        setDailyLoading(true);
+        const [lat, lon] = selectedCity.coordinates as [number, number];
+        const response = await getDailyForecast(lat, lon);
+        
+        // 3시간마다의 데이터를 일별로 그룹화
+        const dailyGrouped = groupByDay(response.list);
+        setDailyData(dailyGrouped);
+      } catch (error) {
+        console.error("5일 예보를 가져오는데 실패했습니다:", error);
+      } finally {
+        setDailyLoading(false);
+      }
+    };
+
+    fetchWeatherData();
+    fetchDailyData();
+  }, [selectedCity]);
+
+  // 3시간마다의 데이터를 일별로 그룹화하는 함수
+  const groupByDay = (forecastList: any[]) => {
+    const grouped: { [key: string]: any[] } = {};
+    
+    forecastList.forEach(item => {
+      const date = new Date(item.dt * 1000);
+      const dayKey = date.toISOString().split('T')[0]; // YYYY-MM-DD 형식
+      
+      if (!grouped[dayKey]) {
+        grouped[dayKey] = [];
+      }
+      grouped[dayKey].push(item);
+    });
+
+    // 각 일의 대표 데이터 (12시 데이터 또는 첫 번째 데이터) 반환
+    return Object.values(grouped).map(dayData => {
+      // 12시 데이터가 있으면 그것을, 없으면 첫 번째 데이터 사용
+      const noonData = dayData.find((item: any) => {
+        const hour = new Date(item.dt * 1000).getHours();
+        return hour >= 11 && hour <= 13;
+      });
+      
+      const representativeData = noonData || dayData[0];
+      
+      return {
+        dt: representativeData.dt,
+        temp: representativeData.main.temp,
+        temp_min: Math.min(...dayData.map((item: any) => item.main.temp_min)),
+        temp_max: Math.max(...dayData.map((item: any) => item.main.temp_max)),
+        humidity: representativeData.main.humidity,
+        weather: representativeData.weather,
+        dt_txt: representativeData.dt_txt,
+      };
+    });
+  };
 
   const handleFavoriteClick = (city: City) => {
     if (isFavorite(city.name)) {
@@ -36,6 +137,38 @@ export const WeatherDashboard = () => {
   };
 
   const displayCities = showFavorites ? favorites : MAJOR_CITIES;
+
+  // 날씨 아이콘을 이모지로 변환하는 함수
+  const getWeatherEmoji = (iconCode: string) => {
+    const iconMap: { [key: string]: string } = {
+      "01d": "☀️", // 맑음 (낮)
+      "01n": "🌙", // 맑음 (밤)
+      "02d": "⛅", // 구름 조금 (낮)
+      "02n": "☁️", // 구름 조금 (밤)
+      "03d": "☁️", // 구름 많음
+      "03n": "☁️",
+      "04d": "☁️", // 흐림
+      "04n": "☁️",
+      "09d": "🌧️", // 소나기
+      "09n": "🌧️",
+      "10d": "🌦️", // 비 (낮)
+      "10n": "🌧️", // 비 (밤)
+      "11d": "⛈️", // 천둥번개
+      "11n": "⛈️",
+      "13d": "🌨️", // 눈
+      "13n": "🌨️",
+      "50d": "🌫️", // 안개
+      "50n": "🌫️",
+    };
+    return iconMap[iconCode] || "⛅";
+  };
+
+  // 날짜를 요일로 변환하는 함수
+  const getDayOfWeek = (timestamp: number) => {
+    const date = new Date(timestamp * 1000);
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    return days[date.getDay()];
+  };
 
   return (
     <div className="grid grid-cols-[80px_1fr] gap-6">
@@ -174,9 +307,19 @@ export const WeatherDashboard = () => {
             <div className="bg-[#242426] rounded-xl p-6">
               <div className="flex flex-col items-center text-center">
                 <h2 className="text-2xl font-bold">{selectedCity.name}</h2>
-                <div className="text-7xl my-4">⛅</div>
-                <p className="text-5xl font-bold">24°</p>
-                <p className="text-gray-400 mt-2">맑음</p>
+                {loading ? (
+                  <div className="text-7xl my-4">⏳</div>
+                ) : weatherData ? (
+                  <>
+                    <div className="text-7xl my-4">
+                      {getWeatherEmoji(weatherData.icon)}
+                    </div>
+                    <p className="text-5xl font-bold">{weatherData.temp}°</p>
+                    <p className="text-gray-400 mt-2">{weatherData.description}</p>
+                  </>
+                ) : (
+                  <div className="text-7xl my-4">❌</div>
+                )}
               </div>
             </div>
             <div className="bg-[#242426] rounded-xl p-6">
@@ -188,12 +331,43 @@ export const WeatherDashboard = () => {
           </div>
         )}
 
-        {/* Weather Chart */}
+        {/* Weekly Weather Forecast */}
         <div className="bg-[#242426] rounded-xl p-6">
-          <h3 className="text-lg font-semibold mb-4">주간 날씨</h3>
-          <div className="h-[200px] flex items-center justify-center text-gray-400">
-            차트가 들어갈 자리입니다
-          </div>
+          <h3 className="text-lg font-semibold mb-4">5일 날씨 예보</h3>
+          {dailyLoading ? (
+            <div className="h-[200px] flex items-center justify-center text-gray-400">
+              5일 예보를 불러오는 중...
+            </div>
+          ) : dailyData.length > 0 ? (
+            <div className="grid grid-cols-5 gap-4">
+              {dailyData.slice(0, 5).map((day, index) => (
+                <div
+                  key={day.dt}
+                  className="bg-[#1C1C1E] rounded-xl p-4 text-center"
+                >
+                  <p className="text-sm text-gray-400 mb-2">
+                    {index === 0 ? "오늘" : getDayOfWeek(day.dt)}
+                  </p>
+                  <div className="text-3xl mb-2">
+                    {getWeatherEmoji(day.weather[0].icon)}
+                  </div>
+                  <p className="font-semibold text-lg">
+                    {Math.round(day.temp)}°
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {Math.round(day.temp_min)}° / {Math.round(day.temp_max)}°
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {capitalizeFirstLetter(day.weather[0].description)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="h-[200px] flex items-center justify-center text-gray-400">
+              5일 예보 정보를 불러올 수 없습니다.
+            </div>
+          )}
         </div>
       </div>
     </div>
