@@ -3,7 +3,6 @@ import {
   getWeatherByCoordinates, // 위도/경도로 날씨 정보 가져오는 API
   getAirQuality, // 대기질 정보 가져오는 API
   getAQIDescription, // AQI 수치를 설명 텍스트로 변환하는 함수
-  getUVIDescription, // UVI 수치를 설명 텍스트로 변환하는 함수
 } from "@/shared/api/weatherApi";
 import type { LatLngExpression } from "leaflet";
 import dayjs from "dayjs"; // 날짜/시간 포맷팅 라이브러리
