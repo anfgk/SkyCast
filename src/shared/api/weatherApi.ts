@@ -231,3 +231,30 @@ export const capitalizeFirstLetter = (text: string) => {
   if (!text) return text;
   return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
 };
+
+// 사용자 현재 위치 기반 날씨 정보 가져오기
+export const getWeatherByUserLocation = async () => {
+  try {
+    // 사용자 위치 권한 요청
+    const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
+      });
+    });
+
+    const { latitude, longitude } = position.coords;
+    
+    // 현재 위치로 날씨 정보 가져오기
+    const response = await getWeatherByCoordinates(latitude, longitude);
+    
+    return {
+      weather: response,
+      location: { lat: latitude, lon: longitude }
+    };
+  } catch (error) {
+    console.error("사용자 위치 기반 날씨 정보를 가져오는데 실패했습니다:", error);
+    throw error;
+  }
+};

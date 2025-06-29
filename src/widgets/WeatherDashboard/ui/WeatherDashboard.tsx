@@ -5,13 +5,11 @@ import { MAJOR_CITIES } from "@/shared/config/cities";
 import type { City } from "@/shared/config/cities";
 import { getWeatherByCoordinates, getDailyForecast, capitalizeFirstLetter } from "@/shared/api/weatherApi";
 import {
-  MagnifyingGlassIcon,
-  SunIcon,
-  MoonIcon,
   ChevronDownIcon,
-  StarIcon as StarOutline,
+  SunIcon,
 } from "@heroicons/react/24/outline";
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
+import { StarIcon as StarOutline } from "@heroicons/react/24/outline";
 import { useFavoriteStore } from "@/shared/store/favoriteStore";
 
 interface WeatherData {
@@ -36,13 +34,13 @@ interface DailyWeatherData {
 
 export const WeatherDashboard = () => {
   const [selectedCity, setSelectedCity] = useState<City>(MAJOR_CITIES[0]);
-  const [isDarkMode, setIsDarkMode] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showFavorites, setShowFavorites] = useState(false);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [dailyData, setDailyData] = useState<DailyWeatherData[]>([]);
   const [loading, setLoading] = useState(true);
   const [dailyLoading, setDailyLoading] = useState(true);
+  const [hasSelectedCity, setHasSelectedCity] = useState(false);
   const { favorites, addFavorite, removeFavorite, isFavorite } =
     useFavoriteStore();
 
@@ -84,6 +82,15 @@ export const WeatherDashboard = () => {
 
     fetchWeatherData();
     fetchDailyData();
+
+    // 10분마다 날씨 데이터 자동 업데이트
+    const weatherInterval = setInterval(fetchWeatherData, 10 * 60 * 1000);
+    const dailyInterval = setInterval(fetchDailyData, 30 * 60 * 1000); // 30분마다 예보 업데이트
+
+    return () => {
+      clearInterval(weatherInterval);
+      clearInterval(dailyInterval);
+    };
   }, [selectedCity]);
 
   // 3시간마다의 데이터를 일별로 그룹화하는 함수
@@ -136,6 +143,12 @@ export const WeatherDashboard = () => {
     setIsDropdownOpen(false);
   };
 
+  const handleCitySelect = (city: City) => {
+    setSelectedCity(city);
+    setIsDropdownOpen(false);
+    setHasSelectedCity(true);
+  };
+
   const displayCities = showFavorites ? favorites : MAJOR_CITIES;
 
   // 날씨 아이콘을 이모지로 변환하는 함수
@@ -171,16 +184,16 @@ export const WeatherDashboard = () => {
   };
 
   return (
-    <div className="grid grid-cols-[80px_1fr] gap-6">
+    <div className="h-full grid grid-cols-[80px_1fr] gap-4 p-4">
       {/* Sidebar */}
-      <div className="bg-[#242426] rounded-2xl p-4 flex flex-col items-center gap-6">
+      <div className="bg-[#242426] rounded-2xl p-3 flex flex-col items-center gap-4">
         <button
           onClick={handleHomeClick}
           className={`text-yellow-400 hover:text-yellow-300 transition-colors`}
         >
           <SunIcon className="w-6 h-6" />
         </button>
-        <nav className="flex flex-col gap-6 items-center flex-1">
+        <nav className="flex flex-col gap-4 items-center flex-1">
           <button
             className={`transition-colors ${
               showFavorites
@@ -196,20 +209,11 @@ export const WeatherDashboard = () => {
           >
             <StarSolid className="w-6 h-6" />
           </button>
-          <button className="text-blue-400 hover:text-blue-300">
-            <MagnifyingGlassIcon className="w-6 h-6" />
-          </button>
         </nav>
-        <button
-          onClick={() => setIsDarkMode(!isDarkMode)}
-          className="text-gray-400 hover:text-gray-300"
-        >
-          <MoonIcon className="w-6 h-6" />
-        </button>
       </div>
 
       {/* Main Content */}
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Header with City Selector */}
         <div className="flex items-center justify-between">
           <div className="relative">
@@ -217,7 +221,7 @@ export const WeatherDashboard = () => {
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className="flex items-center gap-2 bg-[#242426] rounded-xl px-4 py-2 hover:bg-[#2a2a2c] transition-colors"
             >
-              <span>{showFavorites ? "즐겨찾기 도시" : "모든 도시"}</span>
+              <span>{hasSelectedCity ? selectedCity.name : "모든 도시"}</span>
               <ChevronDownIcon className="w-4 h-4" />
             </button>
 
@@ -227,10 +231,7 @@ export const WeatherDashboard = () => {
                 {displayCities.map((city) => (
                   <button
                     key={city.name}
-                    onClick={() => {
-                      setSelectedCity(city);
-                      setIsDropdownOpen(false);
-                    }}
+                    onClick={() => handleCitySelect(city)}
                     className="w-full px-4 py-2 hover:bg-[#2a2a2c] flex items-center justify-between"
                   >
                     <span
@@ -273,9 +274,6 @@ export const WeatherDashboard = () => {
               ) : (
                 <StarOutline className="w-5 h-5" />
               )}
-            </button>
-            <button className="p-2 bg-[#242426] rounded-full">
-              <MoonIcon className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -332,29 +330,29 @@ export const WeatherDashboard = () => {
         )}
 
         {/* Weekly Weather Forecast */}
-        <div className="bg-[#242426] rounded-xl p-6">
-          <h3 className="text-lg font-semibold mb-4">5일 날씨 예보</h3>
+        <div className="bg-[#242426] rounded-xl p-4">
+          <h3 className="text-lg font-semibold mb-3">5일 날씨 예보</h3>
           {dailyLoading ? (
-            <div className="h-[200px] flex items-center justify-center text-gray-400">
+            <div className="h-[120px] flex items-center justify-center text-gray-400">
               5일 예보를 불러오는 중...
             </div>
           ) : dailyData.length > 0 ? (
-            <div className="grid grid-cols-5 gap-4">
+            <div className="grid grid-cols-5 gap-3">
               {dailyData.slice(0, 5).map((day, index) => (
                 <div
                   key={day.dt}
-                  className="bg-[#1C1C1E] rounded-xl p-4 text-center"
+                  className="bg-[#1C1C1E] rounded-xl p-3 text-center"
                 >
-                  <p className="text-sm text-gray-400 mb-2">
+                  <p className="text-sm text-gray-400 mb-1">
                     {index === 0 ? "오늘" : getDayOfWeek(day.dt)}
                   </p>
-                  <div className="text-3xl mb-2">
+                  <div className="text-2xl mb-1">
                     {getWeatherEmoji(day.weather[0].icon)}
                   </div>
-                  <p className="font-semibold text-lg">
+                  <p className="font-semibold text-base">
                     {Math.round(day.temp)}°
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-gray-400">
                     {Math.round(day.temp_min)}° / {Math.round(day.temp_max)}°
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
@@ -364,9 +362,9 @@ export const WeatherDashboard = () => {
               ))}
             </div>
           ) : (
-            <div className="h-[200px] flex items-center justify-center text-gray-400">
+          <div className="h-[120px] flex items-center justify-center text-gray-400">
               5일 예보 정보를 불러올 수 없습니다.
-            </div>
+          </div>
           )}
         </div>
       </div>
