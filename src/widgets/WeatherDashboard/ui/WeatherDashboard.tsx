@@ -7,6 +7,9 @@ import { getWeatherByCoordinates, getDailyForecast, capitalizeFirstLetter } from
 import {
   ChevronDownIcon,
   SunIcon,
+  MapPinIcon,
+  ClockIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
 import { StarIcon as StarOutline } from "@heroicons/react/24/outline";
@@ -41,6 +44,7 @@ export const WeatherDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [dailyLoading, setDailyLoading] = useState(true);
   const [hasSelectedCity, setHasSelectedCity] = useState(false);
+  const [activeTab, setActiveTab] = useState<'home' | 'favorites' | 'map' | 'time' | 'chart'>('home');
   const { favorites, addFavorite, removeFavorite, isFavorite } =
     useFavoriteStore();
 
@@ -141,6 +145,27 @@ export const WeatherDashboard = () => {
     setShowFavorites(false);
     setSelectedCity(MAJOR_CITIES[0]);
     setIsDropdownOpen(false);
+    setActiveTab('home');
+  };
+
+  const handleFavoritesClick = () => {
+    setShowFavorites(!showFavorites);
+    if (!showFavorites && favorites.length > 0) {
+      setSelectedCity(favorites[0]);
+    }
+    setActiveTab('favorites');
+  };
+
+  const handleMapClick = () => {
+    setActiveTab('map');
+  };
+
+  const handleTimeClick = () => {
+    setActiveTab('time');
+  };
+
+  const handleChartClick = () => {
+    setActiveTab('chart');
   };
 
   const handleCitySelect = (city: City) => {
@@ -186,28 +211,47 @@ export const WeatherDashboard = () => {
   return (
     <div className="h-full grid grid-cols-[80px_1fr] gap-4 p-4">
       {/* Sidebar */}
-      <div className="bg-[#242426] rounded-2xl p-3 flex flex-col items-center gap-4">
+      <div className="bg-[#242426] rounded-2xl p-3 flex flex-col items-center pt-8">
         <button
           onClick={handleHomeClick}
-          className={`text-yellow-400 hover:text-yellow-300 transition-colors`}
+          className={`transition-colors ${
+            activeTab === 'home' ? 'text-yellow-400' : 'text-gray-400 hover:text-gray-300'
+          }`}
         >
           <SunIcon className="w-6 h-6" />
         </button>
-        <nav className="flex flex-col gap-4 items-center flex-1">
+        <nav className="flex flex-col gap-4 items-center flex-1 gap-8 pt-8">
           <button
             className={`transition-colors ${
-              showFavorites
-                ? "text-yellow-400"
-                : "text-gray-400 hover:text-gray-300"
+              activeTab === 'favorites' ? 'text-yellow-400' : 'text-gray-400 hover:text-gray-300'
             }`}
-            onClick={() => {
-              setShowFavorites(!showFavorites);
-              if (!showFavorites && favorites.length > 0) {
-                setSelectedCity(favorites[0]);
-              }
-            }}
+            onClick={handleFavoritesClick}
           >
             <StarSolid className="w-6 h-6" />
+          </button>
+          <button 
+            className={`transition-colors ${
+              activeTab === 'map' ? 'text-blue-400' : 'text-gray-400 hover:text-gray-300'
+            }`}
+            onClick={handleMapClick}
+          >
+            <MapPinIcon className="w-6 h-6" />
+          </button>
+          <button 
+            className={`transition-colors ${
+              activeTab === 'time' ? 'text-green-400' : 'text-gray-400 hover:text-gray-300'
+            }`}
+            onClick={handleTimeClick}
+          >
+            <ClockIcon className="w-6 h-6" />
+          </button>
+          <button 
+            className={`transition-colors ${
+              activeTab === 'chart' ? 'text-purple-400' : 'text-gray-400 hover:text-gray-300'
+            }`}
+            onClick={handleChartClick}
+          >
+            <ChartBarIcon className="w-6 h-6" />
           </button>
         </nav>
       </div>
