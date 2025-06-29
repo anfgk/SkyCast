@@ -209,25 +209,25 @@ export const WeatherDashboard = () => {
   };
 
   return (
-    <div className="h-full grid grid-cols-[80px_1fr] gap-4 p-4">
-      {/* Sidebar */}
-      <div className="bg-[#242426] rounded-2xl p-3 flex flex-col items-center pt-8">
+    <div className="h-full grid grid-cols-1 md:grid-cols-[80px_1fr] gap-2 md:gap-4 p-2 md:p-4">
+      {/* Sidebar - Mobile: Bottom Navigation, Desktop: Left Sidebar */}
+      <div className="md:bg-[#242426] md:rounded-2xl md:p-3 md:flex md:flex-col md:items-center md:pt-8 bg-[#242426] rounded-t-2xl p-2 flex flex-row justify-around items-center md:justify-start">
         <button
           onClick={handleHomeClick}
           className={`transition-colors ${
             activeTab === 'home' ? 'text-yellow-400' : 'text-gray-400 hover:text-gray-300'
           }`}
         >
-          <SunIcon className="w-6 h-6" />
+          <SunIcon className="w-5 h-5 md:w-6 md:h-6" />
         </button>
-        <nav className="flex flex-col gap-4 items-center flex-1 gap-8 pt-8">
+        <nav className="flex flex-row md:flex-col gap-4 md:gap-8 items-center flex-1 md:flex-none justify-around md:justify-start pt-0 md:pt-8">
           <button
             className={`transition-colors ${
               activeTab === 'favorites' ? 'text-yellow-400' : 'text-gray-400 hover:text-gray-300'
             }`}
             onClick={handleFavoritesClick}
           >
-            <StarSolid className="w-6 h-6" />
+            <StarSolid className="w-5 h-5 md:w-6 md:h-6" />
           </button>
           <button 
             className={`transition-colors ${
@@ -235,7 +235,7 @@ export const WeatherDashboard = () => {
             }`}
             onClick={handleMapClick}
           >
-            <MapPinIcon className="w-6 h-6" />
+            <MapPinIcon className="w-5 h-5 md:w-6 md:h-6" />
           </button>
           <button 
             className={`transition-colors ${
@@ -243,7 +243,7 @@ export const WeatherDashboard = () => {
             }`}
             onClick={handleTimeClick}
           >
-            <ClockIcon className="w-6 h-6" />
+            <ClockIcon className="w-5 h-5 md:w-6 md:h-6" />
           </button>
           <button 
             className={`transition-colors ${
@@ -251,32 +251,32 @@ export const WeatherDashboard = () => {
             }`}
             onClick={handleChartClick}
           >
-            <ChartBarIcon className="w-6 h-6" />
+            <ChartBarIcon className="w-5 h-5 md:w-6 md:h-6" />
           </button>
         </nav>
       </div>
 
       {/* Main Content */}
-      <div className="space-y-4">
+      <div className="space-y-2 md:space-y-4 overflow-y-auto">
         {/* Header with City Selector */}
         <div className="flex items-center justify-between">
           <div className="relative">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-2 bg-[#242426] rounded-xl px-4 py-2 hover:bg-[#2a2a2c] transition-colors"
+              className="flex items-center gap-2 bg-[#242426] rounded-xl px-3 md:px-4 py-2 hover:bg-[#2a2a2c] transition-colors text-sm md:text-base"
             >
               <span>{hasSelectedCity ? selectedCity.name : "모든 도시"}</span>
-              <ChevronDownIcon className="w-4 h-4" />
+              <ChevronDownIcon className="w-3 h-3 md:w-4 md:h-4" />
             </button>
 
             {/* City Dropdown */}
             {isDropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 w-48 bg-[#242426] rounded-xl shadow-lg py-2 z-10">
+              <div className="absolute top-full left-0 mt-2 w-40 md:w-48 bg-[#242426] rounded-xl shadow-lg py-2 z-10">
                 {displayCities.map((city) => (
                   <button
                     key={city.name}
                     onClick={() => handleCitySelect(city)}
-                    className="w-full px-4 py-2 hover:bg-[#2a2a2c] flex items-center justify-between"
+                    className="w-full px-3 md:px-4 py-2 hover:bg-[#2a2a2c] flex items-center justify-between text-sm md:text-base"
                   >
                     <span
                       className={
@@ -293,9 +293,9 @@ export const WeatherDashboard = () => {
                       className="text-yellow-400"
                     >
                       {isFavorite(city.name) ? (
-                        <StarSolid className="w-4 h-4" />
+                        <StarSolid className="w-3 h-3 md:w-4 md:h-4" />
                       ) : (
-                        <StarOutline className="w-4 h-4" />
+                        <StarOutline className="w-3 h-3 md:w-4 md:h-4" />
                       )}
                     </button>
                   </button>
@@ -304,19 +304,19 @@ export const WeatherDashboard = () => {
             )}
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <button
               onClick={() => handleFavoriteClick(selectedCity)}
-              className={`p-2 bg-[#242426] rounded-full ${
+              className={`p-1.5 md:p-2 bg-[#242426] rounded-full ${
                 isFavorite(selectedCity.name)
                   ? "text-yellow-400"
                   : "text-gray-400 hover:text-gray-300"
               }`}
             >
               {isFavorite(selectedCity.name) ? (
-                <StarSolid className="w-5 h-5" />
+                <StarSolid className="w-4 h-4 md:w-5 md:h-5" />
               ) : (
-                <StarOutline className="w-5 h-5" />
+                <StarOutline className="w-4 h-4 md:w-5 md:h-5" />
               )}
             </button>
           </div>
@@ -324,17 +324,17 @@ export const WeatherDashboard = () => {
 
         {showFavorites ? (
           // Favorites View - Show all favorite cities with detailed weather
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 gap-3 md:gap-6">
             {favorites.length === 0 ? (
-              <div className="bg-[#242426] rounded-xl p-6 text-center">
-                <p className="text-gray-400">즐겨찾기한 도시가 없습니다.</p>
-                <p className="text-sm text-gray-500 mt-2">
+              <div className="bg-[#242426] rounded-xl p-4 md:p-6 text-center">
+                <p className="text-gray-400 text-sm md:text-base">즐겨찾기한 도시가 없습니다.</p>
+                <p className="text-xs md:text-sm text-gray-500 mt-2">
                   도시 옆의 별표 아이콘을 클릭하여 즐겨찾기에 추가하세요.
                 </p>
               </div>
             ) : (
               favorites.map((city) => (
-                <div key={city.name} className="bg-[#242426] rounded-xl p-6">
+                <div key={city.name} className="bg-[#242426] rounded-xl p-4 md:p-6">
                   <DetailedWeatherCard
                     location={city.name}
                     coordinates={city.coordinates}
@@ -345,26 +345,26 @@ export const WeatherDashboard = () => {
           </div>
         ) : (
           // Normal View - Show selected city with basic weather
-          <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-6">
-            <div className="bg-[#242426] rounded-xl p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] gap-3 md:gap-6">
+            <div className="bg-[#242426] rounded-xl p-4 md:p-6">
               <div className="flex flex-col items-center text-center">
-                <h2 className="text-2xl font-bold">{selectedCity.name}</h2>
+                <h2 className="text-xl md:text-2xl font-bold">{selectedCity.name}</h2>
                 {loading ? (
-                  <div className="text-7xl my-4">⏳</div>
+                  <div className="text-5xl md:text-7xl my-3 md:my-4">⏳</div>
                 ) : weatherData ? (
                   <>
-                    <div className="text-7xl my-4">
+                    <div className="text-5xl md:text-7xl my-3 md:my-4">
                       {getWeatherEmoji(weatherData.icon)}
                     </div>
-                    <p className="text-5xl font-bold">{weatherData.temp}°</p>
-                    <p className="text-gray-400 mt-2">{weatherData.description}</p>
+                    <p className="text-4xl md:text-5xl font-bold">{weatherData.temp}°</p>
+                    <p className="text-gray-400 mt-2 text-sm md:text-base">{weatherData.description}</p>
                   </>
                 ) : (
-                  <div className="text-7xl my-4">❌</div>
+                  <div className="text-5xl md:text-7xl my-3 md:my-4">❌</div>
                 )}
               </div>
             </div>
-            <div className="bg-[#242426] rounded-xl p-6">
+            <div className="bg-[#242426] rounded-xl p-4 md:p-6">
               <WeatherCard
                 location={selectedCity.name}
                 coordinates={selectedCity.coordinates}
@@ -374,26 +374,26 @@ export const WeatherDashboard = () => {
         )}
 
         {/* Weekly Weather Forecast */}
-        <div className="bg-[#242426] rounded-xl p-4">
-          <h3 className="text-lg font-semibold mb-3">5일 날씨 예보</h3>
+        <div className="bg-[#242426] rounded-xl p-3 md:p-4">
+          <h3 className="text-base md:text-lg font-semibold mb-2 md:mb-3">5일 날씨 예보</h3>
           {dailyLoading ? (
-            <div className="h-[120px] flex items-center justify-center text-gray-400">
+            <div className="h-[100px] md:h-[120px] flex items-center justify-center text-gray-400 text-sm md:text-base">
               5일 예보를 불러오는 중...
             </div>
           ) : dailyData.length > 0 ? (
-            <div className="grid grid-cols-5 gap-3">
+            <div className="grid grid-cols-5 gap-2 md:gap-3">
               {dailyData.slice(0, 5).map((day, index) => (
                 <div
                   key={day.dt}
-                  className="bg-[#1C1C1E] rounded-xl p-3 text-center"
+                  className="bg-[#1C1C1E] rounded-xl p-2 md:p-3 text-center"
                 >
-                  <p className="text-sm text-gray-400 mb-1">
+                  <p className="text-xs md:text-sm text-gray-400 mb-1">
                     {index === 0 ? "오늘" : getDayOfWeek(day.dt)}
                   </p>
-                  <div className="text-2xl mb-1">
+                  <div className="text-xl md:text-2xl mb-1">
                     {getWeatherEmoji(day.weather[0].icon)}
                   </div>
-                  <p className="font-semibold text-base">
+                  <p className="font-semibold text-sm md:text-base">
                     {Math.round(day.temp)}°
                   </p>
                   <p className="text-xs text-gray-400">
@@ -406,7 +406,7 @@ export const WeatherDashboard = () => {
               ))}
             </div>
           ) : (
-          <div className="h-[120px] flex items-center justify-center text-gray-400">
+          <div className="h-[100px] md:h-[120px] flex items-center justify-center text-gray-400 text-sm md:text-base">
               5일 예보 정보를 불러올 수 없습니다.
           </div>
           )}
