@@ -1,54 +1,62 @@
-# React + TypeScript + Vite
+# SkyCast Project
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 🌈 프로젝트 소개
+**SkyCast**는 실시간 날씨 정보와 예보를 제공하는 현대적인 웹 애플리케이션입니다. 사용자 친화적인 인터페이스로 전국의 주요 도시 날씨를 한눈에 확인할 수 있습니다.
 
-Currently, two official plugins are available:
+- **현재 날씨**: 온도, 습도, 기압, 풍속, 체감온도 등 실시간 데이터
+- **일별 예보**: 오늘부터 5일 후까지의 날씨 정보
+- **즐겨찾기 기능**: 자주 확인하는 도시를 즐겨찾기로 등록
+- **24시간 예보**: 오늘과 내일의 시간대별 날씨
+- **실시간 온도**: 각 시간대별 정확한 온도 정보
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🕰️ 개발기간
+2025.05.08 ~ 2025.06.30
 
-## Expanding the ESLint configuration
+## 🌎 Tech
+React, Vite, Typescript, TailwindCSS
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🖥️ Other Skill
+Netlify, Git, GitHub, Open Weather API
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## 💡 문제점 / 해결 방법
+1. 반응형이 작동하지 않음
+ - 원인: Tailwind CSS의 기본 브레이크포인트와 실제 화면 크기 불일치
+ - 해결: lg: 브레이크포인트(1024px)를 사용하여 모바일과 데스크톱을 명확히 구분하고, 완전히 분리된 레이아웃 구조 적용
+   
+2. CSS 클래스 충돌 문제
+ - 원인: flex flex-row justify-around와 데스크톱용 md:flex md:flex-col md:justify-start 스타일이 동시에 적용되어 예상과 다른 결과 발생
+ - 해결: 모바일용 하단 네비게이션(lg:hidden)과 데스크톱용 사이드바(hidden lg:flex)를 완전히 분리하여 독립적인 스타일링 적용
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+3. 조건부 스타일링 복잡성
+ - 원인: showFavorites 상태와 반응형 스타일이 함께 작동할 때 예측 불가능한 결과 발생
+ - 해결: activeTab 상태를 도입하여 선택된 탭만 컬러가 생기도록 단순화된 조건부 스타일링 적용
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+4. API 버전 호환성 문제
+ - 원인: OpenWeatherMap API 3.0 버전 사용 시 401 에러 발생으로 인한 API 호출 실패
+ - 해결: API 2.5 버전으로 다운그레이드하여 안정적인 날씨 데이터 수신 및 무료 플랜 호환성 확보
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+5. 레이아웃 구조 문제
+ - 원인: 단일 그리드 레이아웃에서 모바일과 데스크톱을 모두 처리하려고 하여 복잡성 증가
+ - 해결: Flexbox 기반의 분리된 레이아웃 구조로 모바일은 세로 스택, 데스크톱은 그리드 레이아웃 적용
+
+6. API 요청 중복 문제
+ - 원인: 도시 선택 시마다 실시간 날씨와 5일 예보를 동시에 요청하여 불필요한 API 호출 증가
+ - 해결: useEffect를 통한 의존성 관리로 선택된 도시가 변경될 때만 API 요청하도록 최적화
+
+ 7. API 데이터 가공 복잡성
+ - 원인: 3시간마다의 예보 데이터를 일별로 그룹화하는 로직이 컴포넌트 내부에 있어 재사용성 부족
+ - 해결: groupByDay 함수를 별도 유틸리티로 분리하여 데이터 가공 로직 모듈화
+
+ 8. API 응답 지연 문제
+ - 원인: API 키가 클라이언트 사이드 코드에 직접 노출되어 보안 위험
+ - 해결: 로딩 스피너(⏳) 및 스켈레톤 UI를 통한 사용자 피드백 제공으로 UX 개선
+
+## ✅ 느낀점/배운점
+이번 SkyCast 프로젝트를 통해 반응형 웹 개발의 실제 복잡성을 깊이 체감할 수 있었습니다. 
+처음에는 단순히 미디어 쿼리와 Tailwind CSS의 반응형 클래스만으로도 충분할 것이라 생각했지만, 
+실제 구현 과정에서 브레이크포인트 선택과 CSS 클래스 우선순위 관리의 어려움을 직접 경험했습니다. 
+특히 모바일과 데스크톱 환경에서 완전히 다른 레이아웃을 구현해야 하는 상황에서, 단일 컴포넌트 내에서 조건부 스타일링을 처리하는 것의 한계를 느꼈습니다.
+Tailwind CSS의 유틸리티 클래스 시스템을 활용하면서 장단점을 명확히 이해할 수 있었다. 
+빠른 개발과 일관된 디자인 시스템 구축에는 매우 유용했지만, 
+복잡한 조건부 스타일링이나 반응형 레이아웃에서는 클래스 충돌과 우선순위 문제가 발생할 수 있다는 것을 배웠다. 
+이를 해결하기 위해 완전히 분리된 레이아웃 구조를 도입하면서, 때로는 단순함이 복잡함보다 더 효과적일 수 있다는 깨달음을 얻었다.
