@@ -7,9 +7,6 @@ import { getWeatherByCoordinates, getDailyForecast, capitalizeFirstLetter } from
 import {
   ChevronDownIcon,
   SunIcon,
-  MapPinIcon,
-  ClockIcon,
-  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
 import { StarIcon as StarOutline } from "@heroicons/react/24/outline";
@@ -228,30 +225,6 @@ export const WeatherDashboard = () => {
             onClick={handleFavoritesClick}
           >
             <StarSolid className="w-5 h-5 md:w-6 md:h-6" />
-          </button>
-          <button 
-            className={`transition-colors ${
-              activeTab === 'map' ? 'text-blue-400' : 'text-gray-400 hover:text-gray-300'
-            }`}
-            onClick={handleMapClick}
-          >
-            <MapPinIcon className="w-5 h-5 md:w-6 md:h-6" />
-          </button>
-          <button 
-            className={`transition-colors ${
-              activeTab === 'time' ? 'text-green-400' : 'text-gray-400 hover:text-gray-300'
-            }`}
-            onClick={handleTimeClick}
-          >
-            <ClockIcon className="w-5 h-5 md:w-6 md:h-6" />
-          </button>
-          <button 
-            className={`transition-colors ${
-              activeTab === 'chart' ? 'text-purple-400' : 'text-gray-400 hover:text-gray-300'
-            }`}
-            onClick={handleChartClick}
-          >
-            <ChartBarIcon className="w-5 h-5 md:w-6 md:h-6" />
           </button>
         </nav>
       </div>
